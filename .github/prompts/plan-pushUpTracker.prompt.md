@@ -45,67 +45,65 @@ pushupTracker/
 6. ✅ Create Prisma schema with User, PushupEntry, Group, GroupMember models
 7. ✅ Create `.env` and `.env.example` files for SQLite local dev configuration
 
-**Phase 1A: Database Schema** (Next)
+**Phase 1A: Database Schema** ✅ COMPLETE
 
-**Phase 1A: Database Schema** (Next)
+8. ✅ Run Prisma migration: `npx prisma migrate dev --name init`
+9. ✅ Verify SQLite database created at `./dev.db`
 
-8. Run Prisma migration: `npx prisma migrate dev --name init`
-9. Verify SQLite database created at `./dev.db`
+**Phase 1B: PrismaService** ✅ COMPLETE
 
-**Phase 1B: PrismaService**
-
-10. Create `src/prisma/prisma.service.ts`:
+10. ✅ Create `src/prisma/prisma.service.ts`:
     - Extend `PrismaClient`
     - Implement `OnModuleInit` for connection
     - Implement `OnModuleDestroy` for disconnection
 
-11. Create `src/prisma/prisma.module.ts`:
+11. ✅ Create `src/prisma/prisma.module.ts`:
     - Mark as `@Global()`
     - Export `PrismaService`
 
-**Phase 1C: Authentication**
+**Phase 1C: Authentication** ✅ COMPLETE
 
-12. Create `src/auth/` directory with:
+12. ✅ Create `src/auth/` directory with:
     - `auth.module.ts`
     - `auth.service.ts` — handle registration, login, JWT generation
     - `local.strategy.ts` — username/password validation
     - `jwt.strategy.ts` — JWT token validation
     - `jwt-auth.guard.ts` — protect routes
 
-13. Create `src/users/` directory with:
+13. ✅ Create `src/users/` directory with:
     - `users.module.ts`
     - `users.service.ts` — CRUD operations, password hashing
-    - `users.controller.ts`:
-      - `POST /auth/register` — create new user
-      - `POST /auth/login` — authenticate and return JWT
-      - `GET /auth/me` — get current user (protected)
-      - `PUT /auth/profile` — update profile (protected)
+    - API endpoints in auth.controller.ts:
+      - `POST /api/auth/register` — create new user
+      - `POST /api/auth/login` — authenticate and return JWT
+      - `GET /api/auth/me` — get current user (protected)
+      - `PUT /api/auth/profile` — update profile (protected)
 
-**Phase 1D: Push-Up Tracking**
+**Phase 1D: Push-Up Tracking** ✅ COMPLETE
 
-14. Create `src/pushups/` directory with:
+14. ✅ Create `src/pushups/` directory with:
     - `pushups.module.ts`
     - `pushups.service.ts` — CRUD operations
     - `pushups.controller.ts` (all protected by `JwtAuthGuard`):
-      - `POST /pushups` — log push-ups for today
-      - `GET /pushups` — get user's push-up history (paginated)
-      - `GET /pushups/today` — get today's count
-      - `PUT /pushups/:id` — update entry
-      - `DELETE /pushups/:id` — remove entry
+      - `POST /api/pushups` — log push-ups for today
+      - `GET /api/pushups` — get user's push-up history (paginated)
+      - `GET /api/pushups/today` — get today's count
+      - `PUT /api/pushups/:id` — update entry
+      - `DELETE /api/pushups/:id` — remove entry
 
-**Phase 1E: NestJS Configuration**
+**Phase 1E: NestJS Configuration** ✅ COMPLETE
 
-15. Update `src/app.module.ts`:
+15. ✅ Update `src/app.module.ts`:
     - Import `PrismaModule`, `AuthModule`, `UsersModule`, `PushupsModule`
     - Configure `ServeStaticModule` to serve React from `client/dist`
 
-16. Create `src/main.ts` updates:
+16. ✅ Update `src/main.ts`:
     - Enable CORS for local dev
     - Set proper middleware order
 
-**Phase 1F: React Frontend**
+**Phase 1F: React Frontend** ✅ COMPLETE
 
-17. Create `client/src/` structure:
+17. ✅ Create `client/src/` structure:
     - `pages/LoginPage.tsx`
     - `pages/RegisterPage.tsx`
     - `pages/DashboardPage.tsx`
@@ -113,17 +111,19 @@ pushupTracker/
     - `services/api.ts` — axios instance with auth interceptors
     - `App.tsx` — main routing with React Router
 
-18. Build pages:
+18. ✅ Build pages:
     - **Login/Register**: Simple form, store JWT in localStorage
     - **Dashboard**: Display today's push-ups, form to log new entry, history list
 
-19. Run `npm run build:client` to build React to `client/dist`
+19. ✅ `npm run build:client` builds React to `client/dist`
 
-**Phase 1G: Database Migrations**
+**Phase 1G: Testing** ✅ VERIFIED
 
-20. Create Prisma migrations for prod PostgreSQL:
-    - Test migration locally with SQLite
-    - Plan PostgreSQL migration (no schema changes needed)
+20. ✅ API endpoints tested and working:
+    - Register returns JWT and user
+    - Login returns JWT
+    - Push-up creation works with auth
+    - Full build passes
 
 ---
 

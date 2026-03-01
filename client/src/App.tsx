@@ -1,20 +1,69 @@
-import { useState } from 'react'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { token, isLoading } = useAuth();
 
-  return (
-    <div className="container">
-      <h1>Push-Up Tracker</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          Count: {count}
-        </button>
-        <p>Click the button to track your push-ups!</p>
-      </div>
-    </div>
-  )
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  return token ? <>{children}</> : <Navigate to="/login" />;
 }
 
-export default App
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { token, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  return token ? <Navigate to="/" /> : <>{children}</>;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <DashboardPage />
+          </PrivateRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
