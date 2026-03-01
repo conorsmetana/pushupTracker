@@ -156,16 +156,19 @@ pushupTracker/
 
 **Phase 3: Charts** *(future)*
 
-24. Add chart library: `npm install recharts` (or chart.js)
+**Phase 3: Charts** ✅ COMPLETE
 
-25. Create `src/stats/` directory:
-    - `stats.controller.ts`:
-      - `GET /stats/personal` — aggregate personal push-ups (daily/weekly/monthly totals)
-      - `GET /stats/group/:id` — aggregate group member stats
+24. ✅ Add chart library: `npm install recharts`
 
-26. Build React pages:
+25. ✅ Create `src/stats/` directory:
+    - `stats.service.ts`, `stats.controller.ts`, `stats.module.ts`
+    - Endpoints:
+      - `GET /api/stats/personal` — aggregate personal push-ups (daily/weekly/monthly totals)
+      - `GET /api/stats/group/:id` — aggregate group member stats
+
+26. ✅ Build React pages:
     - `pages/StatsPage.tsx` — personal charts (line: over time, bar: by week)
-    - Add stats to group detail page
+    - Added navigation link to Stats in header
 
 ---
 

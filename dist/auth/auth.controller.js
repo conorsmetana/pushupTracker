@@ -45,10 +45,10 @@ let AuthController = class AuthController {
         return this.authService.login(req.user);
     }
     async getProfile(req) {
-        return this.usersService.findById(req.user.userId);
+        return this.usersService.findById(req.user.id);
     }
     async updateProfile(req, body) {
-        return this.usersService.updateProfile(req.user.userId, body);
+        return this.usersService.updateProfile(req.user.id, body);
     }
 };
 exports.AuthController = AuthController;

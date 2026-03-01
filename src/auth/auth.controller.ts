@@ -49,12 +49,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Request() req) {
-    return this.usersService.findById(req.user.userId);
+    return this.usersService.findById(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(@Request() req, @Body() body: UpdateProfileDto) {
-    return this.usersService.updateProfile(req.user.userId, body);
+    return this.usersService.updateProfile(req.user.id, body);
   }
 }

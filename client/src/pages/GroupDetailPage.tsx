@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { groupsApi } from '../services/api';
+import { groupStatsApi } from '../services/groupStatsApi';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, BarChart, Bar, CartesianGrid, Legend } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GroupMember {
@@ -42,6 +44,7 @@ export default function GroupDetailPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
   const [period, setPeriod] = useState<'today' | 'week' | 'month'>('week');
+  const [groupStats, setGroupStats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -52,8 +55,19 @@ export default function GroupDetailPage() {
     if (groupId) {
       loadGroup();
       loadLeaderboard();
+      loadGroupStats();
     }
+    // eslint-disable-next-line
   }, [groupId, period]);
+
+  const loadGroupStats = async () => {
+    try {
+      const response = await groupStatsApi.getGroupStats(groupId);
+      setGroupStats(response.data);
+    } catch (err) {
+      // ignore
+    }
+  };
 
   const loadGroup = async () => {
     try {
@@ -189,6 +203,52 @@ export default function GroupDetailPage() {
           ) : (
             <p className="no-data">No push-ups logged for this period yet!</p>
           )}
+
+          {/* Group Stats Charts */}
+          {groupStats.length > 0 && (
+            <div className="stats-section">
+              <h3>Group Daily Stats (Last 30 Days)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={mergeStats(groupStats, 'daily', 'date')}>
+                  <XAxis dataKey="date" type="category" tick={{ fontSize: 12 }} interval={4}
+                    allowDuplicatedCategory={false}
+                    domain={["dataMin", "dataMax"]} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {groupStats.map((member) => (
+                    <Line
+                      key={member.userId}
+                      type="monotone"
+                      dataKey={String(member.userId)}
+                      name={member.name}
+                      strokeWidth={2}
+                      dot={false}
+                      stroke={member.userId === user?.id ? '#4a90d9' : undefined}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+              <h3>Group Weekly Stats (Last 12 Weeks)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={mergeStats(groupStats, 'weekly', 'week')}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="week" type="category" tick={{ fontSize: 12 }} interval={1} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {groupStats.map((member) => (
+                    <Bar
+                      key={member.userId}
+                      dataKey={String(member.userId)}
+                      name={member.name}
+                      fill={member.userId === user?.id ? '#4a90d9' : undefined}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </section>
 
         <section className="members-section">
@@ -208,4 +268,19 @@ export default function GroupDetailPage() {
       </main>
     </div>
   );
+}
+
+// Helper to merge member stats for chart
+function mergeStats(stats: any[], key: 'daily' | 'weekly', xKey: 'date' | 'week') {
+  if (!stats.length) return [];
+  const length = stats[0][key].length;
+  const merged: any[] = [];
+  for (let i = 0; i < length; i++) {
+    const row: any = { [xKey]: stats[0][key][i][xKey] };
+    for (const member of stats) {
+      row[member.userId] = member[key][i].count;
+    }
+    merged.push(row);
+  }
+  return merged;
 }

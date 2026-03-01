@@ -7,6 +7,8 @@ import GroupsPage from './pages/GroupsPage';
 import GroupDetailPage from './pages/GroupDetailPage';
 import './App.css';
 
+import StatsPage from './pages/StatsPage';
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { token, isLoading } = useAuth();
 
@@ -67,6 +69,14 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <GroupDetailPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/stats"
+        element={
+          <PrivateRoute>
+            <StatsPage />
           </PrivateRoute>
         }
       />
