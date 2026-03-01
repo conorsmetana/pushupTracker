@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import GroupsPage from './pages/GroupsPage';
+import GroupDetailPage from './pages/GroupDetailPage';
 import './App.css';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -49,6 +51,22 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <DashboardPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/groups"
+        element={
+          <PrivateRoute>
+            <GroupsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/groups/:id"
+        element={
+          <PrivateRoute>
+            <GroupDetailPage />
           </PrivateRoute>
         }
       />

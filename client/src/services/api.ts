@@ -51,4 +51,18 @@ export const pushupsApi = {
   delete: (id: number) => api.delete(`/api/pushups/${id}`),
 };
 
+// Groups API
+export const groupsApi = {
+  create: (name: string) => api.post('/api/groups', { name }),
+  getAll: () => api.get('/api/groups'),
+  getOne: (id: number) => api.get(`/api/groups/${id}`),
+  join: (inviteCode: string) => api.post('/api/groups/join', { inviteCode }),
+  getMembers: (id: number) => api.get(`/api/groups/${id}/members`),
+  getLeaderboard: (id: number, period: 'today' | 'week' | 'month' = 'week') =>
+    api.get(`/api/groups/${id}/leaderboard?period=${period}`),
+  leave: (id: number) => api.delete(`/api/groups/${id}/leave`),
+  removeMember: (groupId: number, memberId: number) =>
+    api.delete(`/api/groups/${groupId}/members/${memberId}`),
+};
+
 export default api;

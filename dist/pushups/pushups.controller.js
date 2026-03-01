@@ -30,19 +30,19 @@ let PushupsController = class PushupsController {
     }
     async create(req, body) {
         const date = body.date ? new Date(body.date) : undefined;
-        return this.pushupsService.create(req.user.userId, body.count, date);
+        return this.pushupsService.create(req.user.id, body.count, date);
     }
     async findAll(req, take, skip) {
-        return this.pushupsService.findAll(req.user.userId, take ? parseInt(take, 10) : 30, skip ? parseInt(skip, 10) : 0);
+        return this.pushupsService.findAll(req.user.id, take ? parseInt(take, 10) : 30, skip ? parseInt(skip, 10) : 0);
     }
     async findToday(req) {
-        return this.pushupsService.findToday(req.user.userId);
+        return this.pushupsService.findToday(req.user.id);
     }
     async update(req, id, body) {
-        return this.pushupsService.update(id, req.user.userId, body.count);
+        return this.pushupsService.update(id, req.user.id, body.count);
     }
     async delete(req, id) {
-        return this.pushupsService.delete(id, req.user.userId);
+        return this.pushupsService.delete(id, req.user.id);
     }
 };
 exports.PushupsController = PushupsController;

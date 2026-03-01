@@ -31,7 +31,7 @@ export class PushupsController {
   @Post()
   async create(@Request() req, @Body() body: CreatePushupDto) {
     const date = body.date ? new Date(body.date) : undefined;
-    return this.pushupsService.create(req.user.userId, body.count, date);
+    return this.pushupsService.create(req.user.id, body.count, date);
   }
 
   @Get()
@@ -41,7 +41,7 @@ export class PushupsController {
     @Query('skip') skip?: string,
   ) {
     return this.pushupsService.findAll(
-      req.user.userId,
+      req.user.id,
       take ? parseInt(take, 10) : 30,
       skip ? parseInt(skip, 10) : 0,
     );
@@ -49,7 +49,7 @@ export class PushupsController {
 
   @Get('today')
   async findToday(@Request() req) {
-    return this.pushupsService.findToday(req.user.userId);
+    return this.pushupsService.findToday(req.user.id);
   }
 
   @Put(':id')
@@ -58,11 +58,11 @@ export class PushupsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdatePushupDto,
   ) {
-    return this.pushupsService.update(id, req.user.userId, body.count);
+    return this.pushupsService.update(id, req.user.id, body.count);
   }
 
   @Delete(':id')
   async delete(@Request() req, @Param('id', ParseIntPipe) id: number) {
-    return this.pushupsService.delete(id, req.user.userId);
+    return this.pushupsService.delete(id, req.user.id);
   }
 }

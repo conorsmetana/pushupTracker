@@ -129,27 +129,30 @@ pushupTracker/
 
 ---
 
-**Phase 2: Groups** *(future)*
+**Phase 2: Groups** ✅ COMPLETE
 
-21. Create `src/groups/` directory with:
+21. ✅ Create `src/groups/` directory with:
     - `groups.module.ts`
     - `groups.service.ts` — CRUD, invite code generation
     - `groups.controller.ts`:
-      - `POST /groups` — create group
-      - `GET /groups/:id` — get group details
-      - `POST /groups/:id/join` — join group by invite code
-      - `GET /groups/:id/members` — list members
-      - `GET /groups/:id/leaderboard` — aggregate push-ups by user for period (today/week/month)
-      - `DELETE /groups/:id/members/:memberId` — leave group
+      - `POST /api/groups` — create group
+      - `GET /api/groups` — list user's groups
+      - `GET /api/groups/:id` — get group details
+      - `POST /api/groups/join` — join group by invite code
+      - `GET /api/groups/:id/members` — list members
+      - `GET /api/groups/:id/leaderboard` — aggregate push-ups by user for period (today/week/month)
+      - `DELETE /api/groups/:id/members/:memberId` — remove member
+      - `DELETE /api/groups/:id/leave` — leave group
 
-22. Update database schema:
-    - Already added `Group` and `GroupMember` models
-    - Run migration: `npx prisma migrate dev --name add_groups`
+22. ✅ Update database schema:
+    - Added `inviteCode` to Group model
+    - Added `role` to GroupMember model
+    - Run migration: `npx prisma migrate dev --name add_groups_invitecode`
 
-23. Build React pages:
-    - `pages/GroupsPage.tsx` — list user's groups, create new
-    - `pages/GroupDetailPage.tsx` — view group leaderboard
-    - Add group UI to Dashboard
+23. ✅ Build React pages:
+    - `pages/GroupsPage.tsx` — list user's groups, create new, join with code
+    - `pages/GroupDetailPage.tsx` — view group leaderboard, members, copy invite code
+    - Added navigation links to Dashboard header
 
 **Phase 3: Charts** *(future)*
 

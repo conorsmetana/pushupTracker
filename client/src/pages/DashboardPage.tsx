@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { pushupsApi } from '../services/api';
 
@@ -80,7 +81,11 @@ export default function DashboardPage() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>Push-Up Tracker</h1>
+        <h1>💪 Push-Up Tracker</h1>
+        <nav className="nav-links">
+          <Link to="/" className="active">Dashboard</Link>
+          <Link to="/groups">Groups</Link>
+        </nav>
         <div className="user-info">
           <span>Welcome, {user?.name}</span>
           <button onClick={logout} className="logout-btn">
