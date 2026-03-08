@@ -49,19 +49,23 @@ export async function GET(
       );
     }
 
-    const now = new Date();
+    const { sanitizeTimezone, todayAsUtcMidnight, toLocalDateString, DAY_MS } = await import('@/lib/timezone');
+    const tz = sanitizeTimezone(searchParams.get('timezone'));
+    const today = todayAsUtcMidnight(tz);
     let startDate: Date;
 
     switch (period) {
       case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        startDate = today;
         break;
       case 'week':
-        const dayOfWeek = now.getDay();
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+        const dayOfWeek = today.getUTCDay();
+        startDate = new Date(today.getTime() - dayOfWeek * DAY_MS);
         break;
       case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        const todayStr = toLocalDateString(new Date(), tz);
+        const [y, m] = todayStr.split('-').map(Number);
+        startDate = new Date(Date.UTC(y, m - 1, 1));
         break;
     }
 

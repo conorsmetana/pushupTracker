@@ -37,13 +37,13 @@ export async function GET(
     }
 
     // Aggregate group member stats for last 30 days and last 12 weeks
-    const since = new Date();
-    since.setDate(since.getDate() - 29);
-    since.setHours(0, 0, 0, 0);
-
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay() - 11 * 7);
-    weekStart.setHours(0, 0, 0, 0);
+    const { searchParams } = new URL(request.url);
+    const { sanitizeTimezone, todayAsUtcMidnight, DAY_MS } = await import('@/lib/timezone');
+    const tz = sanitizeTimezone(searchParams.get('timezone'));
+    const today = todayAsUtcMidnight(tz);
+    const since = new Date(today.getTime() - 29 * DAY_MS);
+    const dayOfWeek = today.getUTCDay();
+    const weekStart = new Date(today.getTime() - (dayOfWeek + 11 * 7) * DAY_MS);
 
     const members = await prisma.groupMember.findMany({
       where: { groupId },
@@ -58,8 +58,7 @@ export async function GET(
       userId: m.user.id,
       name: m.user.name,
       daily: Array.from({ length: 30 }, (_, i) => {
-        const d = new Date(since);
-        d.setDate(since.getDate() + i);
+        const d = new Date(since.getTime() + i * DAY_MS);
         const key = d.toISOString().slice(0, 10);
         return {
           date: key,
@@ -69,15 +68,12 @@ export async function GET(
         };
       }),
       weekly: Array.from({ length: 12 }, (_, i) => {
-        const start = new Date(weekStart);
-        start.setDate(weekStart.getDate() + i * 7);
-        const end = new Date(start);
-        end.setDate(start.getDate() + 7);
+        const start = new Date(weekStart.getTime() + i * 7 * DAY_MS);
+        const end = new Date(start.getTime() + 7 * DAY_MS);
         const key = start.toISOString().slice(0, 10);
         const count = m.user.pushupEntries
           .filter((e) => {
-            const dt = e.date;
-            return dt >= start && dt < end;
+            return e.date >= start && e.date < end;
           })
           .reduce((sum, e) => sum + e.count, 0);
         return { week: key, count };

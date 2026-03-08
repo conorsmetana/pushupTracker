@@ -12,10 +12,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { searchParams } = new URL(request.url);
+    const { sanitizeTimezone, todayAsUtcMidnight, DAY_MS } = await import('@/lib/timezone');
+    const tz = sanitizeTimezone(searchParams.get('timezone'));
+    const today = todayAsUtcMidnight(tz);
+    const tomorrow = new Date(today.getTime() + DAY_MS);
 
     const entries = await prisma.pushupEntry.findMany({
       where: {

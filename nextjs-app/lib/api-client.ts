@@ -41,19 +41,23 @@ async function fetchApi<T>(
   };
 }
 
+function getTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 // Pushups API
 export const pushupsApi = {
   create: (count: number, date?: string): Promise<ApiResponse<any>> =>
     fetchApi('/api/pushups', {
       method: 'POST',
-      body: JSON.stringify({ count, date }),
+      body: JSON.stringify({ count, date, timezone: getTimezone() }),
     }),
 
   getAll: (take = 30, skip = 0): Promise<ApiResponse<any>> =>
     fetchApi(`/api/pushups?take=${take}&skip=${skip}`),
 
   getToday: (): Promise<ApiResponse<any>> =>
-    fetchApi('/api/pushups/today'),
+    fetchApi(`/api/pushups/today?timezone=${encodeURIComponent(getTimezone())}`),
 
   update: (id: number, count: number): Promise<ApiResponse<any>> =>
     fetchApi(`/api/pushups/${id}`, {
@@ -91,7 +95,7 @@ export const groupsApi = {
     fetchApi(`/api/groups/${id}/members`),
 
   getLeaderboard: (id: number, period: 'today' | 'week' | 'month' = 'week'): Promise<ApiResponse<any>> =>
-    fetchApi(`/api/groups/${id}/leaderboard?period=${period}`),
+    fetchApi(`/api/groups/${id}/leaderboard?period=${period}&timezone=${encodeURIComponent(getTimezone())}`),
 
   leave: (id: number): Promise<ApiResponse<any>> =>
     fetchApi(`/api/groups/${id}/leave`, {
@@ -107,10 +111,10 @@ export const groupsApi = {
 // Stats API
 export const statsApi = {
   getPersonal: (): Promise<ApiResponse<any>> =>
-    fetchApi('/api/stats/personal'),
+    fetchApi(`/api/stats/personal?timezone=${encodeURIComponent(getTimezone())}`),
 
   getGroup: (id: number): Promise<ApiResponse<any>> =>
-    fetchApi(`/api/stats/group/${id}`),
+    fetchApi(`/api/stats/group/${id}?timezone=${encodeURIComponent(getTimezone())}`),
 };
 
 export default fetchApi;

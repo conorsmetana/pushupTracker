@@ -13,11 +13,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const userId = parseInt(auth.user!.id);
+    const { searchParams } = new URL(request.url);
+    const { sanitizeTimezone, todayAsUtcMidnight, DAY_MS } = await import('@/lib/timezone');
+    const tz = sanitizeTimezone(searchParams.get('timezone'));
+    const today = todayAsUtcMidnight(tz);
 
     // Daily totals for last 30 days
-    const since = new Date();
-    since.setDate(since.getDate() - 29);
-    since.setHours(0, 0, 0, 0);
+    const since = new Date(today.getTime() - 29 * DAY_MS);
 
     const entries = await prisma.pushupEntry.findMany({
       where: { userId, date: { gte: since } },
@@ -27,8 +29,7 @@ export async function GET(request: NextRequest) {
     // Group by day
     const dailyMap: Record<string, number> = {};
     for (let i = 0; i < 30; i++) {
-      const d = new Date(since);
-      d.setDate(since.getDate() + i);
+      const d = new Date(since.getTime() + i * DAY_MS);
       const key = d.toISOString().slice(0, 10);
       dailyMap[key] = 0;
     }
@@ -45,21 +46,20 @@ export async function GET(request: NextRequest) {
     }));
 
     // Weekly totals for last 12 weeks
-    const weeklyStart = new Date();
-    weeklyStart.setDate(weeklyStart.getDate() - 83); // ~12 weeks
-    weeklyStart.setHours(0, 0, 0, 0);
+    const dayOfWeek = today.getUTCDay();
+    const weeklyStart = new Date(today.getTime() - (dayOfWeek + 11 * 7) * DAY_MS);
 
     const weeklyEntries = await prisma.pushupEntry.findMany({
       where: { userId, date: { gte: weeklyStart } },
       orderBy: { date: 'asc' },
     });
 
-    // Group by week (ISO week number)
+    // Group by week (Sunday start)
     const weeklyMap: Record<string, number> = {};
     for (const entry of weeklyEntries) {
       const d = new Date(entry.date);
-      const startOfWeek = new Date(d);
-      startOfWeek.setDate(d.getDate() - d.getDay()); // Start of week (Sunday)
+      const dow = d.getUTCDay();
+      const startOfWeek = new Date(d.getTime() - dow * DAY_MS);
       const weekKey = startOfWeek.toISOString().slice(0, 10);
       weeklyMap[weekKey] = (weeklyMap[weekKey] || 0) + entry.count;
     }
