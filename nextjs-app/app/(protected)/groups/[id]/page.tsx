@@ -4,6 +4,18 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  CartesianGrid,
+} from 'recharts';
 import { groupsApi, statsApi } from '@/lib/api-client';
 
 interface GroupMember {
@@ -38,6 +50,23 @@ interface Leaderboard {
   leaderboard: LeaderboardEntry[];
 }
 
+interface MemberStats {
+  userId: number;
+  name: string;
+  daily: { date: string; count: number }[];
+  weekly: { week: string; count: number }[];
+}
+
+interface DailyTotal {
+  date: string;
+  [key: string]: string | number;
+}
+
+const COLORS = [
+  '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
+  '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6'
+];
+
 export default function GroupDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -50,6 +79,77 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [groupStats, setGroupStats] = useState<MemberStats[]>([]);
+  const [chartData, setChartData] = useState<DailyTotal[]>([]);
+  const [weeklyChartData, setWeeklyChartData] = useState<any[]>([]);
+  const [chartPeriod, setChartPeriod] = useState<'week' | 'month' | 'all'>('month');
+
+  const loadGroupStats = async () => {
+    try {
+      const response = await statsApi.getGroup(groupId);
+      const stats: MemberStats[] = response.data;
+      setGroupStats(stats);
+
+      // Transform data for daily chart (all members on same chart)
+      if (stats.length > 0) {
+        const dailyData: DailyTotal[] = stats[0].daily.map((d, i) => {
+          const point: DailyTotal = { date: d.date.slice(5) }; // MM-DD format
+          stats.forEach((m) => {
+            point[m.name] = m.daily[i]?.count || 0;
+          });
+          return point;
+        });
+        setChartData(dailyData);
+
+        // Group totals by week
+        const weeklyData = stats[0].weekly.map((w, i) => {
+          const point: any = { week: w.week.slice(5) };
+          let total = 0;
+          stats.forEach((m) => {
+            const count = m.weekly[i]?.count || 0;
+            point[m.name] = count;
+            total += count;
+          });
+          point.total = total;
+          return point;
+        });
+        setWeeklyChartData(weeklyData);
+      }
+    } catch (err) {
+      console.error('Failed to load group stats:', err);
+    }
+  };
+
+  // Filter chart data based on selected period
+  const getFilteredDailyData = () => {
+    if (chartPeriod === 'week') {
+      return chartData.slice(-7);
+    } else if (chartPeriod === 'month') {
+      return chartData; // Already 30 days
+    }
+    return chartData; // 'all' - show all available data
+  };
+
+  const getFilteredWeeklyData = () => {
+    if (chartPeriod === 'week') {
+      return weeklyChartData.slice(-1); // Just this week
+    } else if (chartPeriod === 'month') {
+      return weeklyChartData.slice(-4); // Last 4 weeks
+    }
+    return weeklyChartData; // 'all' - show all 12 weeks
+  };
+
+  const getChartTitle = () => {
+    if (chartPeriod === 'week') return 'Last 7 Days';
+    if (chartPeriod === 'month') return 'Last 30 Days';
+    return 'All Time (12 Weeks)';
+  };
+
+  const getWeeklyChartTitle = () => {
+    if (chartPeriod === 'week') return 'This Week';
+    if (chartPeriod === 'month') return 'Last 4 Weeks';
+    return 'Last 12 Weeks';
+  };
 
   const loadGroup = async () => {
     try {
@@ -73,6 +173,7 @@ export default function GroupDetailPage() {
   useEffect(() => {
     if (groupId) {
       loadGroup();
+      loadGroupStats();
     }
   }, [groupId]);
 
@@ -296,6 +397,95 @@ export default function GroupDetailPage() {
             ))}
           </div>
         </section>
+
+        {/* Group Stats Charts */}
+        {groupStats.length > 0 && (
+          <>
+            {/* Period Toggle */}
+            <div className="flex justify-end gap-2 mb-2 mt-2">
+              <button
+                onClick={() => setChartPeriod('week')}
+                className={`px-4 py-2 rounded-md transition text-sm font-medium ${
+                  chartPeriod === 'week'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                Week
+              </button>
+              <button
+                onClick={() => setChartPeriod('month')}
+                className={`px-4 py-2 rounded-md transition text-sm font-medium ${
+                  chartPeriod === 'month'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                Month
+              </button>
+              <button
+                onClick={() => setChartPeriod('all')}
+                className={`px-4 py-2 rounded-md transition text-sm font-medium ${
+                  chartPeriod === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                All Time
+              </button>
+            </div>
+
+            <section className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Group Activity - {getChartTitle()}</h3>
+              <p className="text-sm text-gray-500 mb-4">Daily push-ups by member</p>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={getFilteredDailyData()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    interval={chartPeriod === 'week' ? 0 : Math.floor(getFilteredDailyData().length / 8)}
+                  />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {groupStats.map((member, i) => (
+                    <Line
+                      key={member.userId}
+                      type="monotone"
+                      dataKey={member.name}
+                      stroke={COLORS[i % COLORS.length]}
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </section>
+
+            <section className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Weekly Totals - {getWeeklyChartTitle()}</h3>
+              <p className="text-sm text-gray-500 mb-4">Stacked weekly push-ups by member</p>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={getFilteredWeeklyData()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="week" tick={{ fontSize: 11 }} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {groupStats.map((member, i) => (
+                    <Bar
+                      key={member.userId}
+                      dataKey={member.name}
+                      stackId="a"
+                      fill={COLORS[i % COLORS.length]}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );
