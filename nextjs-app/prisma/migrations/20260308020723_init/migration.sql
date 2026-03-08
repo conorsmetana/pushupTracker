@@ -23,6 +23,7 @@ CREATE TABLE "PushupEntry" (
 CREATE TABLE "Group" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
+    "inviteCode" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -30,6 +31,7 @@ CREATE TABLE "Group" (
 -- CreateTable
 CREATE TABLE "GroupMember" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "role" TEXT NOT NULL DEFAULT 'member',
     "userId" INTEGER NOT NULL,
     "groupId" INTEGER NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -46,6 +48,9 @@ CREATE INDEX "PushupEntry_userId_idx" ON "PushupEntry"("userId");
 
 -- CreateIndex
 CREATE INDEX "PushupEntry_date_idx" ON "PushupEntry"("date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Group_inviteCode_key" ON "Group"("inviteCode");
 
 -- CreateIndex
 CREATE INDEX "GroupMember_userId_idx" ON "GroupMember"("userId");
