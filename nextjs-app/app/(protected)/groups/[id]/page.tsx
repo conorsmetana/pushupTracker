@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -209,37 +209,19 @@ export default function GroupDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow">
-          <div className="mx-auto max-w-7xl px-4 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">💪 Push-Up Tracker</h1>
-          </div>
-        </nav>
-        <main className="mx-auto max-w-7xl px-4 py-8">
-          <p className="text-gray-500">Loading...</p>
-        </main>
-      </div>
-    );
+    return <p className="text-gray-500">Loading...</p>;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow">
-          <div className="mx-auto max-w-7xl px-4 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">💪 Push-Up Tracker</h1>
-          </div>
-        </nav>
-        <main className="mx-auto max-w-7xl px-4 py-8">
-          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded mb-4">
-            {error}
-          </div>
-          <Link href="/groups" className="text-blue-600 hover:text-blue-700">
-            ← Back to Groups
-          </Link>
-        </main>
-      </div>
+      <>
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded mb-4">
+          {error}
+        </div>
+        <Link href="/groups" className="text-blue-600 hover:text-blue-700">
+          ← Back to Groups
+        </Link>
+      </>
     );
   }
 
@@ -249,37 +231,7 @@ export default function GroupDetailPage() {
   const isOwner = currentUserRole === 'owner';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">💪 Push-Up Tracker</h1>
-          <div className="flex items-center gap-4">
-            <p className="text-gray-600">{session?.user?.name}</p>
-            <button
-              onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-3">
-            <Link href="/" className="text-blue-600 hover:text-blue-700">
-              Dashboard
-            </Link>
-            <span className="mx-2 text-gray-400">|</span>
-            <Link href="/groups" className="text-blue-600 hover:text-blue-700">
-              Groups
-            </Link>
-            <span className="mx-2 text-gray-400">|</span>
-            <span className="text-gray-700 font-semibold">{group.name}</span>
-          </div>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-7xl px-4 py-8">
+    <>
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
@@ -486,7 +438,6 @@ export default function GroupDetailPage() {
             </section>
           </>
         )}
-      </main>
-    </div>
+    </>
   );
 }

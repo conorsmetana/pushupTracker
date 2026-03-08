@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import {
   ResponsiveContainer,
@@ -56,37 +56,7 @@ export default function StatsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">💪 Push-Up Tracker</h1>
-          <div className="flex items-center gap-4">
-            <p className="text-gray-600">{session?.user?.name}</p>
-            <button
-              onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-3">
-            <Link href="/" className="text-blue-600 hover:text-blue-700">
-              Dashboard
-            </Link>
-            <span className="mx-2 text-gray-400">|</span>
-            <Link href="/groups" className="text-blue-600 hover:text-blue-700">
-              Groups
-            </Link>
-            <span className="mx-2 text-gray-400">|</span>
-            <span className="text-gray-700 font-semibold">Statistics</span>
-          </div>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-7xl px-4 py-8">
+    <>
         <h2 className="text-3xl font-bold text-gray-900 mb-8">Push-Up Statistics</h2>
 
         {error && (
@@ -156,7 +126,6 @@ export default function StatsPage() {
             Back to Dashboard
           </Link>
         </div>
-      </main>
-    </div>
+    </>
   );
 }
