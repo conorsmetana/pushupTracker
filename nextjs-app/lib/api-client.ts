@@ -50,7 +50,7 @@ export const pushupsApi = {
   create: (count: number, date?: string): Promise<ApiResponse<any>> =>
     fetchApi('/api/pushups', {
       method: 'POST',
-      body: JSON.stringify({ count, date, timezone: getTimezone() }),
+      body: JSON.stringify({ count, date }),
     }),
 
   getAll: (take = 30, skip = 0): Promise<ApiResponse<any>> =>

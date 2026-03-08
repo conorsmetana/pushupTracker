@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { count, date, timezone } = body;
+    const { count, date } = body;
 
     if (!count || typeof count !== 'number' || count < 0) {
       return NextResponse.json(
@@ -60,10 +60,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { sanitizeTimezone, toLocalDateString, localDateToUtcMidnight } = await import('@/lib/timezone');
-    const tz = sanitizeTimezone(timezone);
-    const refDate = date ? new Date(date) : new Date();
-    const entryDate = localDateToUtcMidnight(toLocalDateString(refDate, tz));
+    const entryDate = date ? new Date(date) : new Date();
 
     const entry = await prisma.pushupEntry.create({
       data: {
