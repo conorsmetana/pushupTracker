@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node prisma/generate-schema.js && prisma generate && prisma migrate deploy && next build",
+    "build": "node prisma/generate-schema.js && prisma generate && prisma db push && next build",
     "postinstall": "node prisma/generate-schema.js && prisma generate",
     "start": "next start",
     "lint": "eslint",
