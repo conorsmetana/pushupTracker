@@ -113,7 +113,7 @@ export default function GroupsPage() {
                 placeholder="Group name"
                 maxLength={50}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               />
               <button
                 type="submit"
@@ -135,7 +135,7 @@ export default function GroupsPage() {
                 placeholder="Enter invite code"
                 maxLength={8}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               />
               <button
                 type="submit"
