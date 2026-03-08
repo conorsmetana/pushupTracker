@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node prisma/generate-schema.js && prisma generate && next build",
-    "postinstall": "node prisma/generate-schema.js",
+    "build": "node prisma/generate-schema.js && prisma generate && prisma migrate deploy && next build",
+    "postinstall": "node prisma/generate-schema.js && prisma generate",
     "start": "next start",
     "lint": "eslint",
     "prisma:generate": "node prisma/generate-schema.js && prisma generate",
     "prisma:migrate": "node prisma/generate-schema.js && prisma migrate dev",
+    "prisma:deploy": "node prisma/generate-schema.js && prisma migrate deploy",
     "prisma:studio": "node prisma/generate-schema.js && prisma studio",
     "prisma:seed": "node prisma/generate-schema.js && tsx prisma/seed.ts"
   },
