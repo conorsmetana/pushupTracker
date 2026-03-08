@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
-    "postinstall": "prisma generate",
+    "build": "node prisma/generate-schema.js && prisma generate && next build",
+    "postinstall": "node prisma/generate-schema.js",
     "start": "next start",
     "lint": "eslint",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:generate": "node prisma/generate-schema.js && prisma generate",
+    "prisma:migrate": "node prisma/generate-schema.js && prisma migrate dev",
+    "prisma:studio": "node prisma/generate-schema.js && prisma studio",
+    "prisma:seed": "node prisma/generate-schema.js && tsx prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
