@@ -99,6 +99,20 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        <div className="border-t border-gray-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-3">
+            <span className="text-gray-700 font-semibold">Dashboard</span>
+            <span className="mx-2 text-gray-400">|</span>
+            <Link href="/groups" className="text-blue-600 hover:text-blue-700">
+              Groups
+            </Link>
+            <span className="mx-2 text-gray-400">|</span>
+            <Link href="/stats" className="text-blue-600 hover:text-blue-700">
+              Statistics
+            </Link>
+          </div>
+        </div>
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
