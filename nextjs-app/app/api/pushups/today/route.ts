@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const { sanitizeTimezone, todayAsUtcMidnight, DAY_MS } = await import('@/lib/timezone');
+    const { sanitizeTimezone, todayLocalStartUtc, DAY_MS } = await import('@/lib/timezone');
     const tz = sanitizeTimezone(searchParams.get('timezone'));
-    const today = todayAsUtcMidnight(tz);
+    const today = todayLocalStartUtc(tz);
     const tomorrow = new Date(today.getTime() + DAY_MS);
 
     const entries = await prisma.pushupEntry.findMany({

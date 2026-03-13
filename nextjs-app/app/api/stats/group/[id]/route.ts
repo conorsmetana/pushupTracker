@@ -38,12 +38,14 @@ export async function GET(
 
     // Aggregate group member stats for last 30 days and last 12 weeks
     const { searchParams } = new URL(request.url);
-    const { sanitizeTimezone, todayAsUtcMidnight, DAY_MS } = await import('@/lib/timezone');
+    const { sanitizeTimezone, toLocalDateString, localDateToLocalMidnightUtc, localDateDayOfWeek, addDaysToDateStr, DAY_MS } = await import('@/lib/timezone');
     const tz = sanitizeTimezone(searchParams.get('timezone'));
-    const today = todayAsUtcMidnight(tz);
-    const since = new Date(today.getTime() - 29 * DAY_MS);
-    const dayOfWeek = today.getUTCDay();
-    const weekStart = new Date(today.getTime() - (dayOfWeek + 11 * 7) * DAY_MS);
+    const todayStr = toLocalDateString(new Date(), tz);
+    const sinceStr = addDaysToDateStr(todayStr, -29);
+    const since = localDateToLocalMidnightUtc(sinceStr, tz);
+    const todayDow = localDateDayOfWeek(todayStr);
+    const sundayStr = addDaysToDateStr(todayStr, -todayDow);
+    const weekStartStr = addDaysToDateStr(sundayStr, -11 * 7);
 
     const members = await prisma.groupMember.findMany({
       where: { groupId },
@@ -58,25 +60,24 @@ export async function GET(
       userId: m.user.id,
       name: m.user.name,
       daily: Array.from({ length: 30 }, (_, i) => {
-        const d = new Date(since.getTime() + i * DAY_MS);
-        const key = d.toISOString().slice(0, 10);
+        const key = addDaysToDateStr(sinceStr, i);
         return {
           date: key,
           count: m.user.pushupEntries
-            .filter((e) => e.date.toISOString().slice(0, 10) === key)
+            .filter((e) => toLocalDateString(e.date, tz) === key)
             .reduce((sum, e) => sum + e.count, 0),
         };
       }),
       weekly: Array.from({ length: 12 }, (_, i) => {
-        const start = new Date(weekStart.getTime() + i * 7 * DAY_MS);
-        const end = new Date(start.getTime() + 7 * DAY_MS);
-        const key = start.toISOString().slice(0, 10);
+        const weekKeyStr = addDaysToDateStr(weekStartStr, i * 7);
+        const weekStartUtc = localDateToLocalMidnightUtc(weekKeyStr, tz);
+        const weekEndUtc = localDateToLocalMidnightUtc(addDaysToDateStr(weekKeyStr, 7), tz);
         const count = m.user.pushupEntries
           .filter((e) => {
-            return e.date >= start && e.date < end;
+            return e.date >= weekStartUtc && e.date < weekEndUtc;
           })
           .reduce((sum, e) => sum + e.count, 0);
-        return { week: key, count };
+        return { week: weekKeyStr, count };
       }),
     }));
 

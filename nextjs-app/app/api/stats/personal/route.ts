@@ -14,29 +14,32 @@ export async function GET(request: NextRequest) {
   try {
     const userId = parseInt(auth.user!.id);
     const { searchParams } = new URL(request.url);
-    const { sanitizeTimezone, todayAsUtcMidnight, DAY_MS } = await import('@/lib/timezone');
+    const { sanitizeTimezone, toLocalDateString, localDateToLocalMidnightUtc, todayLocalStartUtc, localDateDayOfWeek, addDaysToDateStr, DAY_MS } = await import('@/lib/timezone');
     const tz = sanitizeTimezone(searchParams.get('timezone'));
-    const today = todayAsUtcMidnight(tz);
+    const todayStr = toLocalDateString(new Date(), tz);
+    const today = localDateToLocalMidnightUtc(todayStr, tz);
 
     // Daily totals for last 30 days
-    const since = new Date(today.getTime() - 29 * DAY_MS);
+    const sinceStr = addDaysToDateStr(todayStr, -29);
+    const since = localDateToLocalMidnightUtc(sinceStr, tz);
 
     const entries = await prisma.pushupEntry.findMany({
       where: { userId, date: { gte: since } },
       orderBy: { date: 'asc' },
     });
 
-    // Group by day
+    // Group by day (using local date in user's timezone)
     const dailyMap: Record<string, number> = {};
     for (let i = 0; i < 30; i++) {
-      const d = new Date(since.getTime() + i * DAY_MS);
-      const key = d.toISOString().slice(0, 10);
+      const key = addDaysToDateStr(sinceStr, i);
       dailyMap[key] = 0;
     }
 
     for (const entry of entries) {
-      const key = entry.date.toISOString().slice(0, 10);
-      dailyMap[key] = (dailyMap[key] || 0) + entry.count;
+      const key = toLocalDateString(entry.date, tz);
+      if (key in dailyMap) {
+        dailyMap[key] += entry.count;
+      }
     }
 
     // Convert to array format for charts
@@ -46,21 +49,22 @@ export async function GET(request: NextRequest) {
     }));
 
     // Weekly totals for last 12 weeks
-    const dayOfWeek = today.getUTCDay();
-    const weeklyStart = new Date(today.getTime() - (dayOfWeek + 11 * 7) * DAY_MS);
+    const todayDow = localDateDayOfWeek(todayStr);
+    const sundayStr = addDaysToDateStr(todayStr, -todayDow);
+    const weeklyStartStr = addDaysToDateStr(sundayStr, -11 * 7);
+    const weeklyStart = localDateToLocalMidnightUtc(weeklyStartStr, tz);
 
     const weeklyEntries = await prisma.pushupEntry.findMany({
       where: { userId, date: { gte: weeklyStart } },
       orderBy: { date: 'asc' },
     });
 
-    // Group by week (Sunday start)
+    // Group by week (Sunday start, using local date in user's timezone)
     const weeklyMap: Record<string, number> = {};
     for (const entry of weeklyEntries) {
-      const d = new Date(entry.date);
-      const dow = d.getUTCDay();
-      const startOfWeek = new Date(d.getTime() - dow * DAY_MS);
-      const weekKey = startOfWeek.toISOString().slice(0, 10);
+      const entryLocalDate = toLocalDateString(entry.date, tz);
+      const entryDow = localDateDayOfWeek(entryLocalDate);
+      const weekKey = addDaysToDateStr(entryLocalDate, -entryDow);
       weeklyMap[weekKey] = (weeklyMap[weekKey] || 0) + entry.count;
     }
 

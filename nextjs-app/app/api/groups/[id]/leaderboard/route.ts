@@ -49,9 +49,10 @@ export async function GET(
       );
     }
 
-    const { sanitizeTimezone, todayAsUtcMidnight, toLocalDateString, DAY_MS } = await import('@/lib/timezone');
+    const { sanitizeTimezone, toLocalDateString, localDateToLocalMidnightUtc, localDateDayOfWeek, addDaysToDateStr, DAY_MS } = await import('@/lib/timezone');
     const tz = sanitizeTimezone(searchParams.get('timezone'));
-    const today = todayAsUtcMidnight(tz);
+    const todayStr = toLocalDateString(new Date(), tz);
+    const today = localDateToLocalMidnightUtc(todayStr, tz);
     let startDate: Date;
 
     switch (period) {
@@ -59,13 +60,14 @@ export async function GET(
         startDate = today;
         break;
       case 'week':
-        const dayOfWeek = today.getUTCDay();
-        startDate = new Date(today.getTime() - dayOfWeek * DAY_MS);
+        const dayOfWeek = localDateDayOfWeek(todayStr);
+        const weekStartStr = addDaysToDateStr(todayStr, -dayOfWeek);
+        startDate = localDateToLocalMidnightUtc(weekStartStr, tz);
         break;
       case 'month':
-        const todayStr = toLocalDateString(new Date(), tz);
         const [y, m] = todayStr.split('-').map(Number);
-        startDate = new Date(Date.UTC(y, m - 1, 1));
+        const monthStartStr = `${y}-${String(m).padStart(2, '0')}-01`;
+        startDate = localDateToLocalMidnightUtc(monthStartStr, tz);
         break;
     }
 
